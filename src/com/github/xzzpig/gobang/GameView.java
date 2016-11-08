@@ -7,10 +7,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 
 import com.github.xzzpig.gobang.Chest.Piece;
-import com.github.xzzpig.gobang.GameControler.Side;
 
 public class GameView extends JComponent {
 
@@ -39,7 +37,6 @@ public class GameView extends JComponent {
 							(int) dis[0], (int) dis[1]);
 					loc_t = loc;
 				}
-				// System.out.println(event.getX()+","+event.getY()+"|"+loc[0]+","+loc[1]);
 			}
 		});
 		this.addMouseListener(new MouseAdapter() {
@@ -49,16 +46,7 @@ public class GameView extends JComponent {
 				int x = loc[0] - 1, y = loc[1] - 1;
 				GameControler.getInstance().put(x, y);
 				paint(getGraphics());
-				if (GameControler.getInstance().isWin(x, y)) {
-					String side;
-					if (GameControler.getInstance().getSide() == Side.BLACK)
-						side = "白方";
-					else
-						side = "黑方";
-					JOptionPane.showMessageDialog(null, "游戏结束\n" + side + "胜");
-					new Chest();
-					paint(getGraphics());
-				}
+				GameControler.getInstance().printIfWin(x, y);
 			}
 		});
 	}
@@ -66,7 +54,6 @@ public class GameView extends JComponent {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		// System.out.println("Paint");
 		Chest chest = Chest.getInstance();
 		int size = chest.getSize();
 		measure();

@@ -1,7 +1,7 @@
 package com.github.xzzpig.gobang;
 
 public class Chest {
-	
+
 	private static Chest instance;
 
 	enum Piece {
@@ -9,7 +9,7 @@ public class Chest {
 	}
 
 	private int size;
-	
+
 	private int[] lastpiece;
 
 	private Piece[][] data;
@@ -22,7 +22,6 @@ public class Chest {
 		data = new Piece[size][size];
 		this.size = size;
 		instance = this;
-		GameControler.getInstance().reset();
 	}
 
 	public int getSize() {
@@ -31,7 +30,7 @@ public class Chest {
 
 	public void putPiece(int x, int y, Piece piece) {
 		data[x][y] = piece;
-		lastpiece = new int[]{x,y};
+		lastpiece = new int[] { x, y };
 	}
 
 	public Piece getPiece(int x, int y) {
@@ -39,7 +38,8 @@ public class Chest {
 	}
 
 	public boolean canPutPiece(int x, int y) {
-		if(x>=size||y>=getSize()||x<0||y<0)return false;
+		if (x >= size || y >= getSize() || x < 0 || y < 0)
+			return false;
 		return data[x][y] == null;
 	}
 
@@ -111,13 +111,13 @@ public class Chest {
 			return true;
 		return false;
 	}
-	
-	public int[] getLastPieceLoc(){
+
+	public int[] getLastPieceLoc() {
 		return lastpiece;
 	}
-	
-	public static Chest getInstance(){
-		if(instance == null)
+
+	public static Chest getInstance() {
+		if (instance == null)
 			new Chest();
 		return instance;
 	}
