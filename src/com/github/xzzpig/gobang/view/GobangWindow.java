@@ -1,4 +1,4 @@
-package com.github.xzzpig.gobang;
+package com.github.xzzpig.gobang.view;
 
 import java.awt.EventQueue;
 import java.awt.TrayIcon.MessageType;
@@ -12,17 +12,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+import com.github.xzzpig.gobang.Chest;
+import com.github.xzzpig.gobang.GameControler;
+import com.github.xzzpig.gobang.MultiGameControler;
+import com.github.xzzpig.gobang.SingleGameControler;
+import com.github.xzzpig.gobang.WebGameControler;
+
 import net.miginfocom.swing.MigLayout;
 
 public class GobangWindow {
-
-	private JFrame frame;
-	private GameView gameView;
-	private JMenu menu_config;
-	private JMenuItem menuItem_size;
-	private JMenu menu_multi;
-	private JMenuItem menuItem_Server;
-	private JMenuItem menuItem_Client;
 
 	/**
 	 * Launch the application.
@@ -40,6 +38,16 @@ public class GobangWindow {
 		});
 	}
 
+	private JFrame frame;
+	private GameView gameView;
+	private JMenu menu_config;
+	private JMenuItem menuItem_size;
+	private JMenu menu_multi;
+	private JMenuItem menuItem_Server;
+	private JMenuItem menuItem_Client;
+
+	private JMenuItem menuItem_inRoom;
+
 	/**
 	 * Create the application.
 	 */
@@ -54,9 +62,9 @@ public class GobangWindow {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 800, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new MigLayout("", "[778px,grow]", "[][744px,grow]"));
+		frame.getContentPane().setLayout(new MigLayout("", "[778px,grow]", "[grow]"));
 		gameView = new GameView();
-		frame.getContentPane().add(gameView, "cell 0 1,grow");
+		frame.getContentPane().add(gameView, "cell 0 0,grow");
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -109,6 +117,8 @@ public class GobangWindow {
 				while (ip == null) {
 					ip = JOptionPane.showInputDialog(null, "服务器IP", "五子棋", MessageType.INFO.ordinal());
 				}
+				new Chest(Chest.getInstance().getSize());
+				GameControler.getInstance().reset();
 				try {
 					new MultiGameControler(ip, 1597);
 				} catch (UnknownHostException e) {
@@ -118,6 +128,39 @@ public class GobangWindow {
 			}
 		});
 		menu_multi.add(menuItem_Client);
+
+		menuItem_inRoom = new JMenuItem("\u52A0\u5165\u623F\u95F4");
+		menuItem_inRoom.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String room = null;
+				while (room == null) {
+					room = JOptionPane.showInputDialog(null, "加入房间名称", "五子棋", MessageType.INFO.ordinal());
+				}
+				try {
+					GameControler.getInstance().reset();
+					new Chest();
+					new WebGameControler(room);
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(frame, "房间已加满");
+					new Chest();
+					new SingleGameControler();
+				}
+			}
+		});
+		menu_multi.add(menuItem_inRoom);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (frame.isEnabled()) {
+					frame.paint(frame.getGraphics());
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
 	}
 
 }

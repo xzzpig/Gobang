@@ -1,4 +1,4 @@
-package com.github.xzzpig.gobang;
+package com.github.xzzpig.gobang.view;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -8,7 +8,10 @@ import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JComponent;
 
+import com.github.xzzpig.gobang.Chest;
 import com.github.xzzpig.gobang.Chest.Piece;
+import com.github.xzzpig.gobang.GameControler;
+import com.github.xzzpig.gobang.SingleGameControler;
 
 public class GameView extends JComponent {
 
@@ -31,11 +34,8 @@ public class GameView extends JComponent {
 					paint(getGraphics());
 					if (!GameControler.getInstance().canPut(loc[0] - 1, loc[1] - 1))
 						return;
-					Graphics graphics = getGraphics();
-					graphics.setColor(Color.GRAY);
-					graphics.drawRect((int) (loc[0] * dis[0] - dis[0] / 2), (int) (loc[1] * dis[1] - dis[1] / 2),
-							(int) dis[0], (int) dis[1]);
 					loc_t = loc;
+					paint(getGraphics());
 				}
 			}
 		});
@@ -51,20 +51,24 @@ public class GameView extends JComponent {
 		});
 	}
 
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		Chest chest = Chest.getInstance();
-		int size = chest.getSize();
-		measure();
-		drawBack(g);
-		drawLine(g, size);
-		drawPiece(g, chest, size);
-	}
-
 	private void drawBack(Graphics g) {
 		g.setColor(Color.getHSBColor(30, 240, 96));
 		g.fillRect(0, 0, getWidth(), getHeight());
+	}
+
+	private void drawLine(Graphics g, int size) {
+		g.setColor(Color.BLACK);
+		size++;
+		for (int i = 1; i < size; i++) {
+			g.drawLine(0, (int) (dis[1] * i), getWidth(), (int) (dis[1] * i));
+			g.drawLine((int) (dis[0] * i), 0, (int) (dis[0] * i), getHeight());
+		}
+	}
+
+	private void drawMouse(Graphics g) {
+		g.setColor(Color.GRAY);
+		g.drawRect((int) (loc_t[0] * dis[0] - dis[0] / 2), (int) (loc_t[1] * dis[1] - dis[1] / 2), (int) dis[0],
+				(int) dis[1]);
 	}
 
 	private void drawPiece(Graphics g, Chest chest, int size) {
@@ -95,13 +99,9 @@ public class GameView extends JComponent {
 
 	}
 
-	private void drawLine(Graphics g, int size) {
-		g.setColor(Color.BLACK);
-		size++;
-		for (int i = 1; i < size; i++) {
-			g.drawLine(0, (int) (dis[1] * i), getWidth(), (int) (dis[1] * i));
-			g.drawLine((int) (dis[0] * i), 0, (int) (dis[0] * i), getHeight());
-		}
+	private int[] getFixedLocAt(int x, int y) {
+		int a = (int) ((x) / dis[0] + 0.5), b = (int) (y / dis[1] + 0.5);
+		return new int[] { a, b };
 	}
 
 	private void measure() {
@@ -110,8 +110,15 @@ public class GameView extends JComponent {
 		dis = new float[] { (float) getWidth() / size, (float) getHeight() / size };
 	}
 
-	private int[] getFixedLocAt(int x, int y) {
-		int a = (int) ((x) / dis[0] + 0.5), b = (int) (y / dis[1] + 0.5);
-		return new int[] { a, b };
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		Chest chest = Chest.getInstance();
+		int size = chest.getSize();
+		measure();
+		drawBack(g);
+		drawLine(g, size);
+		drawPiece(g, chest, size);
+		drawMouse(g);
 	}
 }

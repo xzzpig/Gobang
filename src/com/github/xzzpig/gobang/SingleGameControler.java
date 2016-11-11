@@ -13,6 +13,11 @@ public class SingleGameControler extends GameControler {
 	}
 
 	@Override
+	public boolean canPut(int x, int y) {
+		return Chest.getInstance().canPutPiece(x, y);
+	}
+
+	@Override
 	public Side getSide() {
 		if (side == null)
 			side = Side.BLACK;
@@ -20,8 +25,17 @@ public class SingleGameControler extends GameControler {
 	}
 
 	@Override
-	public boolean canPut(int x, int y) {
-		return Chest.getInstance().canPutPiece(x, y);
+	public void printIfWin(int x, int y) {
+		if (isWin(x, y)) {
+			String side;
+			if (GameControler.getInstance().getSide() == Side.BLACK)
+				side = "白方";
+			else
+				side = "黑方";
+			JOptionPane.showMessageDialog(null, "游戏结束\n" + side + "胜");
+			new Chest();
+			reset();
+		}
 	}
 
 	@Override
@@ -41,20 +55,6 @@ public class SingleGameControler extends GameControler {
 	@Override
 	public void reset() {
 		side = Side.BLACK;
-	}
-
-	@Override
-	public void printIfWin(int x, int y) {
-		if (isWin(x, y)) {
-			String side;
-			if (GameControler.getInstance().getSide() == Side.BLACK)
-				side = "白方";
-			else
-				side = "黑方";
-			JOptionPane.showMessageDialog(null, "游戏结束\n" + side + "胜");
-			new Chest();
-			reset();
-		}
 	}
 
 }

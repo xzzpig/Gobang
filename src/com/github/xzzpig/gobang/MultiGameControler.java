@@ -29,17 +29,15 @@ public class MultiGameControler extends GameControler {
 	public MultiGameControler() throws UnknownHostException {
 		server = new WebSocketServer(new InetSocketAddress(1597)) {
 			@Override
-			public void onOpen(WebSocket conn, ClientHandshake handshake) {
-				if (webSocket != null)
-					return;
-				connected = true;
-				webSocket = conn;
-				myturn = true;
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.accumulate("command", "resize");
-				jsonObject.accumulate("size", Chest.getInstance().getSize());
-				sendMessage(jsonObject);
-				JOptionPane.showMessageDialog(null, "白方连接成功\n开始游戏");
+			public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+				connected = false;
+				JOptionPane.showMessageDialog(null, "白方断开连接");
+				new Chest(Chest.getInstance().getSize());
+				new SingleGameControler();
+			}
+
+			@Override
+			public void onError(WebSocket conn, Exception ex) {
 			}
 
 			@Override
@@ -61,15 +59,17 @@ public class MultiGameControler extends GameControler {
 			}
 
 			@Override
-			public void onError(WebSocket conn, Exception ex) {
-			}
-
-			@Override
-			public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-				connected = false;
-				JOptionPane.showMessageDialog(null, "白方断开连接");
-				new Chest(Chest.getInstance().getSize());
-				new SingleGameControler();
+			public void onOpen(WebSocket conn, ClientHandshake handshake) {
+				if (webSocket != null)
+					return;
+				connected = true;
+				webSocket = conn;
+				myturn = true;
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.accumulate("command", "resize");
+				jsonObject.accumulate("size", Chest.getInstance().getSize());
+				sendMessage(jsonObject);
+				JOptionPane.showMessageDialog(null, "白方连接成功\n开始游戏");
 			}
 		};
 		server.start();
@@ -83,9 +83,16 @@ public class MultiGameControler extends GameControler {
 		client = new WebSocketClient(URI.create("ws://" + ip + ":" + port)) {
 
 			@Override
-			public void onOpen(ServerHandshake handshakedata) {
-				connected = true;
-				JOptionPane.showMessageDialog(null, "服务器连接成功\n开始游戏");
+			public void onClose(int code, String reason, boolean remote) {
+				connected = false;
+				JOptionPane.showMessageDialog(null, "断开连接");
+				new Chest(Chest.getInstance().getSize());
+				new SingleGameControler();
+			}
+
+			@Override
+			public void onError(Exception ex) {
+				ex.printStackTrace();
 			}
 
 			@Override
@@ -110,26 +117,14 @@ public class MultiGameControler extends GameControler {
 			}
 
 			@Override
-			public void onError(Exception ex) {
-				ex.printStackTrace();
-			}
-
-			@Override
-			public void onClose(int code, String reason, boolean remote) {
-				connected = false;
-				JOptionPane.showMessageDialog(null, "断开连接");
-				new Chest(Chest.getInstance().getSize());
-				new SingleGameControler();
+			public void onOpen(ServerHandshake handshakedata) {
+				connected = true;
+				JOptionPane.showMessageDialog(null, "服务器连接成功\n开始游戏");
 			}
 		};
 		client.connect();
 		side = Side.WHITE;
 		webSocket = client;
-	}
-
-	@Override
-	public Side getSide() {
-		return side;
 	}
 
 	@Override
@@ -141,6 +136,29 @@ public class MultiGameControler extends GameControler {
 		if (!myturn)
 			return false;
 		return true;
+	}
+
+	@Override
+	public Side getSide() {
+		return side;
+	}
+
+	@Override
+	public void printIfWin(int x, int y) {
+		if (isWin(x, y) && side == Side.BLACK) {
+			String side;
+			if (!myturn)
+				side = "黑方";
+			else
+				side = "白方";
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.accumulate("command", "win");
+			jsonObject.accumulate("side", side);
+			sendMessage(jsonObject);
+			JOptionPane.showMessageDialog(null, "游戏结束\n" + side + "胜");
+			new Chest();
+			reset();
+		}
 	}
 
 	@Override
@@ -181,23 +199,5 @@ public class MultiGameControler extends GameControler {
 
 	private void sendMessage(JSONObject message) {
 		webSocket.send(message.toString());
-	}
-
-	@Override
-	public void printIfWin(int x, int y) {
-		if (isWin(x, y) && side == Side.BLACK) {
-			String side;
-			if (!myturn)
-				side = "黑方";
-			else
-				side = "白方";
-			JSONObject jsonObject = new JSONObject();
-			jsonObject.accumulate("command", "win");
-			jsonObject.accumulate("side", side);
-			sendMessage(jsonObject);
-			JOptionPane.showMessageDialog(null, "游戏结束\n" + side + "胜");
-			new Chest();
-			reset();
-		}
 	}
 }

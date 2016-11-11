@@ -2,10 +2,16 @@ package com.github.xzzpig.gobang;
 
 public class Chest {
 
+	public enum Piece {
+		BLACK, WHITE;
+	}
+
 	private static Chest instance;
 
-	enum Piece {
-		BLACK, WHITE;
+	public static Chest getInstance() {
+		if (instance == null)
+			new Chest();
+		return instance;
 	}
 
 	private int size;
@@ -24,23 +30,22 @@ public class Chest {
 		instance = this;
 	}
 
-	public int getSize() {
-		return size;
+	public boolean canPutPiece(int x, int y) {
+		if (x >= size || y >= getSize() || x < 0 || y < 0)
+			return false;
+		return data[x][y] == null;
 	}
 
-	public void putPiece(int x, int y, Piece piece) {
-		data[x][y] = piece;
-		lastpiece = new int[] { x, y };
+	public int[] getLastPieceLoc() {
+		return lastpiece;
 	}
 
 	public Piece getPiece(int x, int y) {
 		return data[x][y];
 	}
 
-	public boolean canPutPiece(int x, int y) {
-		if (x >= size || y >= getSize() || x < 0 || y < 0)
-			return false;
-		return data[x][y] == null;
+	public int getSize() {
+		return size;
 	}
 
 	public boolean isWin(int x, int y) {
@@ -112,13 +117,8 @@ public class Chest {
 		return false;
 	}
 
-	public int[] getLastPieceLoc() {
-		return lastpiece;
-	}
-
-	public static Chest getInstance() {
-		if (instance == null)
-			new Chest();
-		return instance;
+	public void putPiece(int x, int y, Piece piece) {
+		data[x][y] = piece;
+		lastpiece = new int[] { x, y };
 	}
 }
